@@ -4,33 +4,53 @@ let Ra = (arr)=>arr[Math.floor(Math.random()*arr.length)];
 
 cols = ['#4583ff',  'Coral']
 
+// project.importSVG('testimage/stat3-flat.svg', function(item) {
+// 	imported = item;
+//     imported.children[0].remove(); //import creates unwanted rectangle object we need to get rid of
+// 	console.log('imported image, starting distortion')
+// 	// vdist.shift( vdist.shift(imported, 50, 10, false), 140, 2, true)
+// 	// vdist.shift(imported, 20, 100, false)
+
+// 	// phase1 = vdist.triangulate(imported, 20, 0.21)
+
+// 	// vdist.shift(phase1, 50, 20)
+	
+// })
+
+
 for (let y=0;y<3;y++) {
-	for (let x=0;x<5;x++) {
+	for (let x=0;x<6;x++) {
 
 		am = y+x == 0 ? 0 : (y * 4 + x) / (6*4)
-		distortCirle([(x*350)+300,(y*400)+200], 30, 5, am)
+		distortCircle([(x*350)+300,(y*400)+200], 30, 5, am)
 	}
 }
 
+// distortCircle(vc, 60, 10)
 
 
-function distortCirle(cnt, n, size, a) {
+function distortCircle(cnt, n, size, a) {
 
 	ci = new Group()
 	
 	for (i=0;i<n;i++) {
+		sc = i == n/2 ? 'red' : '#333'
+
 		new Path.Circle({
 			center: cnt,
 			radius: i * size,
-			strokeColor: Ra(cols),
-			strokeWidth: 2,
+			// strokeColor: Ra(cols),
+			strokeColor: sc,
+			strokeWidth: 4,
 			parent: ci
 		})
 	}
 	
-	dist1 = vdist.shift(ci, 50*a+5, 20*a, false)
+	vdist.triangulate(ci, 300*a + 3, a)
+
+	// dist1 = vdist.shift(ci, 50*a+5, 20*a, false)
 	
-	dist2 = vdist.shift(dist1, 70*a+5, 60*a, true)
+	// dist2 = vdist.shift(dist1, 70*a+5, 60*a, true)
 
 	//vdist.shift(dist2, 90*a, 30*a, false)
 }	

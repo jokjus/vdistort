@@ -1,5 +1,6 @@
 paper = paper && Object.prototype.hasOwnProperty.call(paper, 'default') ? paper['default'] : paper;
 let F = (a) => Math.floor(a) 
+let R = (a) => Math.random() * a
 
 let vdist = {
 
@@ -48,6 +49,74 @@ let vdist = {
 
 	},
 
+	triangulate: (item, count, power, ungroup = false) => {
+		let ib = item.bounds
+		let resGroup = new paper.Group()
+
+		let randomPoints = [ib.topLeft.x, ib.topLeft.y, ib.topRight.x, ib.topRight.y, ib.bottomLeft.x, ib.bottomLeft.y, ib.bottomRight.x, ib.bottomRight.y]
+		let points = []
+		points.push([ib.topLeft.x, ib.topLeft.y], [ib.topRight.x, ib.topRight.y], [ib.bottomLeft.x, ib.bottomLeft.y], [ib.bottomRight.x, ib.bottomRight.y])
+
+		for (let i=0;i<count;i++) {
+			x = R(ib.width) + ib.left
+			y = R(ib.height) + ib.top
+			randomPoints.push( x, y ) // x coordinate
+			points.push([x,y])
+		}
+
+		const delaunay = new Delaunator(randomPoints);
+		let tri = delaunay.triangles
+		let co = delaunay.coords
+
+		let counter = 1
+		
+		function drawTri(inp, points) {
+			console.log('processing triangle:' + counter) 
+			counter++
+
+			let clipGroup = new paper.Group({parent: resGroup, clipped: true})
+
+			let mask = new paper.Path({
+				segments: points,
+				strokeColor: 'red',
+				strokeWidth: 1,
+				closed: true,
+				parent: clipGroup
+			})
+
+			let ic = item.clone()
+			ic.insertBelow(mask)
+			ic.pivot = mask.bounds.center
+
+			ic.rotate(Math.random() * power * 180)
+
+			mask.clipMask = true
+		}
+
+		forEachTriangle(points, delaunay, drawTri)
+		if (ungroup) console.log('starting flattening'); vdist.ungroup(resGroup);
+
+		item.remove()
+
+		return resGroup
+
+
+		// Helpers
+		function edgesOfTriangle(t) { return [3 * t, 3 * t + 1, 3 * t + 2]; }
+
+		function pointsOfTriangle(delaunay, t) {
+			return edgesOfTriangle(t)
+				.map(e => delaunay.triangles[e]);
+		}
+
+		function forEachTriangle(points, delaunay, callback) {
+			for (let t = 0; t < delaunay.triangles.length / 3; t++) {
+				callback(t, pointsOfTriangle(delaunay, t).map(p => points[p]));
+			}
+		}
+
+	},
+
 
 	flattenClipping: (clipGroup) => {
 
@@ -91,6 +160,7 @@ let vdist = {
 			//if (innerOrig.closed || innerOrig.type != undefined) traceMethod = true
 
 			// The boolean operation
+			if (inner == undefined) console.log(inner)
 			let newEl = inner.intersect(mask, {trace: traceMethod})
 
 			// If the result is a compound path, restore original appearance after boolean operation
