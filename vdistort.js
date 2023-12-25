@@ -49,13 +49,13 @@ let vdist = {
 
 	},
 
-	triangulate: (item, count, power, ungroup = false) => {
+	triangulate: (item, count, power, pivotType = 1, ungroup = false) => {
 		let ib = item.bounds
 		let resGroup = new paper.Group()
 
-		let randomPoints = [ib.topLeft.x, ib.topLeft.y, ib.topRight.x, ib.topRight.y, ib.bottomLeft.x, ib.bottomLeft.y, ib.bottomRight.x, ib.bottomRight.y]
+		let randomPoints = [ib.topCenter.x, ib.topCenter.y, ib.leftCenter.x, ib.leftCenter.y, ib.bottomCenter.x, ib.bottomCenter.y, ib.rightCenter.x, ib.rightCenter.y]
 		let points = []
-		points.push([ib.topLeft.x, ib.topLeft.y], [ib.topRight.x, ib.topRight.y], [ib.bottomLeft.x, ib.bottomLeft.y], [ib.bottomRight.x, ib.bottomRight.y])
+		points.push([ib.topCenter.x, ib.topCenter.y], [ib.leftCenter.x, ib.leftCenter.y], [ib.bottomCenter.x, ib.bottomCenter.y], [ib.rightCenter.x, ib.rightCenter.y])
 
 		for (let i=0;i<count;i++) {
 			x = R(ib.width) + ib.left
@@ -68,11 +68,18 @@ let vdist = {
 		let tri = delaunay.triangles
 		let co = delaunay.coords
 
-		let counter = 1
+		forEachTriangle(points, delaunay, drawTri)
+		if (ungroup) vdist.ungroup(resGroup);
+
+		item.remove()
+
+		return resGroup
+
 		
+
+		// Helpers
+
 		function drawTri(inp, points) {
-			console.log('processing triangle:' + counter) 
-			counter++
 
 			let clipGroup = new paper.Group({parent: resGroup, clipped: true})
 
@@ -86,22 +93,13 @@ let vdist = {
 
 			let ic = item.clone()
 			ic.insertBelow(mask)
-			ic.pivot = mask.bounds.center
+			ic.pivot = pivotType == 1 ? mask.bounds.center : ic.center
 
 			ic.rotate(Math.random() * power * 180)
 
 			mask.clipMask = true
 		}
 
-		forEachTriangle(points, delaunay, drawTri)
-		if (ungroup) console.log('starting flattening'); vdist.ungroup(resGroup);
-
-		item.remove()
-
-		return resGroup
-
-
-		// Helpers
 		function edgesOfTriangle(t) { return [3 * t, 3 * t + 1, 3 * t + 2]; }
 
 		function pointsOfTriangle(delaunay, t) {
@@ -193,7 +191,6 @@ let vdist = {
 
 	// Recursively ungroup the SVG
 	ungroup: (item, keepCompounds = true) => {
-
 		flag = true
 
 		for (var i = 0; i < item.children.length; i++) {

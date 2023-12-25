@@ -1,8 +1,14 @@
 vc = view.center
 let Ra = (arr)=>arr[Math.floor(Math.random()*arr.length)];
+let R = (a) => Math.random() * a
 
+new Path.Rectangle({
+	point: view.bounds.topLeft,
+	size: view.bounds.size,
+	fillColor: 'black'
+})
 
-cols = ['#4583ff',  'Coral']
+cols = ['#2b2622',  '#c69500']
 
 // project.importSVG('testimage/stat3-flat.svg', function(item) {
 // 	imported = item;
@@ -18,11 +24,11 @@ cols = ['#4583ff',  'Coral']
 // })
 
 
-for (let y=0;y<3;y++) {
-	for (let x=0;x<6;x++) {
+for (let y=0;y<2;y++) {
+	for (let x=0;x<3;x++) {
 
-		am = y+x == 0 ? 0 : (y * 4 + x) / (6*4)
-		distortCircle([(x*350)+300,(y*400)+200], 30, 5, am)
+		am = y+x == 0 ? 0.01 : (y * 2 + x) / (3*2) /2
+		distortCircle([(x*650)+500,(y*600)+350], 50, 6, am)
 	}
 }
 
@@ -33,20 +39,41 @@ function distortCircle(cnt, n, size, a) {
 
 	ci = new Group()
 	
-	for (i=0;i<n;i++) {
-		sc = i == n/2 ? 'red' : '#333'
+	
+	// for (i=1;i<n;i++) {
+	// 	sc = Ra(cols)
+	// 	mark = utl.mark(10*i, 20*i, sc, 3)
+	// 	mark.parent = ci
+	// 	mark.position = cnt
 
-		new Path.Circle({
+	// }
+
+
+	for (i=1;i<n;i++) {
+
+		sc = Ra(cols)
+		circu = new Path.Circle({
 			center: cnt,
 			radius: i * size,
-			// strokeColor: Ra(cols),
 			strokeColor: sc,
+			// strokeCap: 'round',
+			// strokeColor: sc,
 			strokeWidth: 4,
 			parent: ci
 		})
+
+		expanded = PaperOffset.offsetStroke(circu, 2, { cap: 'round' })
+		expanded.fillColor = sc
+		expanded.parent = ci
+
+		circu.remove()
 	}
 	
-	vdist.triangulate(ci, 300*a + 3, a)
+	
+	part1 = vdist.triangulate(ci, 400*a + 3, a, 1, false)
+
+	// ax = Math.random() > 0.5 ? true : false
+	// vdist.shift(part1, R(50) + 10, R(40) + 5, ax)
 
 	// dist1 = vdist.shift(ci, 50*a+5, 20*a, false)
 	
