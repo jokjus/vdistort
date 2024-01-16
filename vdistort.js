@@ -5,7 +5,7 @@ let R = (a) => Math.random() * a
 let vdist = {
 
     // Shift slices of image to opposite directions -----------------------------------------
-    shift: (item, slizeSize, amount, vertical = false) => {
+    shift: (item, slizeSize, amount, vertical = false, ungroup = false) => {
 		let ib = item.bounds
 
 		let max = vertical ? ib.height : ib.width
@@ -41,7 +41,7 @@ let vdist = {
 		}
 
 		// clips.forEach(clip => vdist.ungroup(clip))
-		vdist.ungroup(resGroup)
+		if (ungroup) vdist.ungroup(resGroup)
 
 		item.remove()
 
@@ -49,7 +49,7 @@ let vdist = {
 
 	},
 
-	triangulate: (item, count, power, pivotType = 1, ungroup = false) => {
+	triangulate: (item, count, power, pivotType = 1, ungroup = false, poisson = false) => {
 		let ib = item.bounds
 		let resGroup = new paper.Group()
 
@@ -57,13 +57,41 @@ let vdist = {
 		let points = []
 		points.push([ib.topCenter.x, ib.topCenter.y], [ib.leftCenter.x, ib.leftCenter.y], [ib.bottomCenter.x, ib.bottomCenter.y], [ib.rightCenter.x, ib.rightCenter.y])
 
-		for (let i=0;i<count;i++) {
-			x = R(ib.width) + ib.left
-			y = R(ib.height) + ib.top
-			randomPoints.push( x, y ) // x coordinate
-			points.push([x,y])
+		if (!poisson) {
+			for (let i=0;i<count;i++) {
+				x = R(ib.width) + ib.left
+				y = R(ib.height) + ib.top
+				randomPoints.push( x, y ) // x coordinate
+				points.push([x,y])
+			}
 		}
+		else {
+			const pds = new PoissonDiskSampling({
+				shape: [ib.width, ib.height],
+				minDistance: ib.width / (count * 2),
+				maxDistance: ib.width / count,
+				tries:10,
+				distanceFunction: function (p) {
+					return 1 - vdist.getValue(p[0], p[1], ib.width, ib.height); // value between 0 and 1
+				}
+			});
+			
+			let poisPoints = pds.fill()
 
+			poisPoints.forEach(p => {p[0] += ib.left; p[1] += ib.top})
+
+			// let C = (x,y,r) => new paper.Path.Circle({center: new paper.Point(x,y), radius: r, fillColor: 'red' })
+
+			// poisPoints.forEach(p => {
+			// 	C(p[0], p[1], 2)
+			// })
+
+			poisPoints.forEach(po => {
+				randomPoints.push(po[0], po[1]);
+				points.push(po);
+			})
+		}
+		
 		const delaunay = new Delaunator(randomPoints);
 		let tri = delaunay.triangles
 		let co = delaunay.coords
@@ -222,6 +250,24 @@ let vdist = {
 				vdist.ungroup(item)
 			}
 		}
+	},
+
+	getValue: (x, y, width, height) => {
+		// Calculate the center of the area
+		const centerX = width / 2;
+		const centerY = height / 2;
+	
+		// Calculate the maximum distance from the center
+		const maxDistance = Math.sqrt((centerX ** 2) + (centerY ** 2));
+	
+		// Calculate the distance from the center to the given coordinate
+		const distance = Math.sqrt((x - centerX) ** 2 + (y - centerY) ** 2);
+	
+		// Calculate the value based on the distance
+		const value = 1 - distance / maxDistance;
+	
+		// Ensure the value is within the [0, 1] range
+		return Math.max(0, Math.min(1, value));
 	}
 
 

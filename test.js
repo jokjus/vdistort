@@ -5,19 +5,26 @@ let R = (a) => Math.random() * a
 new Path.Rectangle({
 	point: view.bounds.topLeft,
 	size: view.bounds.size,
-	fillColor: 'black'
+	fillColor: '#222'
 })
 
-cols = ['#2b2622',  '#c69500']
+// area = new Path.Rectangle({
+// 	point: vc-new Point(300,300),
+// 	size: [600,600],
+// 	fillColor: 'white'
+// })
 
-// project.importSVG('testimage/stat3-flat.svg', function(item) {
+cols = ['#afa69e',  '#cac6c3', '#3f3e3a', '#786e66']
+
+// project.importSVG('testimage/v8.svg', function(item) {
 // 	imported = item;
 //     imported.children[0].remove(); //import creates unwanted rectangle object we need to get rid of
 // 	console.log('imported image, starting distortion')
 // 	// vdist.shift( vdist.shift(imported, 50, 10, false), 140, 2, true)
-// 	// vdist.shift(imported, 20, 100, false)
+// 	// p1 = vdist.shift(imported, 50, 10, false, false )
+// 	vdist.shift(imported, 50, 10, true, false )
 
-// 	// phase1 = vdist.triangulate(imported, 20, 0.21)
+// 	// phase1 = vdist.triangulate(imported, 100, 0.11, 1, false, false)
 
 // 	// vdist.shift(phase1, 50, 20)
 	
@@ -28,11 +35,36 @@ for (let y=0;y<2;y++) {
 	for (let x=0;x<3;x++) {
 
 		am = y+x == 0 ? 0.01 : (y * 2 + x) / (3*2) /2
-		distortCircle([(x*650)+500,(y*600)+350], 50, 6, am)
+		distortCircle([(x*650)+500,(y*600)+350], 40, 6, am)
 	}
 }
 
-// distortCircle(vc, 60, 10)
+
+// distortCircle(vc, 50, 10, .1)
+// const pds = new PoissonDiskSampling({
+// 	shape: [500, 500],
+// 	minDistance: 10,
+// 	maxDistance: 30,
+// 	tries:10,
+// 	distanceFunction: function (point) {
+//         return point[0] / 200;
+//     }
+// });
+
+// let C = (x,y,r) => new Path.Circle({center: new Point(x,y), radius: r, fillColor: 'red' })
+
+// let points = pds.fill()
+// points.forEach(p => {
+// 	C(p[0], p[1], 2)
+// })
+
+// console.log(points)
+
+
+// const points = pds.getPoints().map(([x, y]) => new Point(center.x + x, center.y + y));
+// return points;
+
+// console.log(utl.genPoissonPoints(vc, 50, 10, 400))
 
 
 function distortCircle(cnt, n, size, a) {
@@ -70,10 +102,10 @@ function distortCircle(cnt, n, size, a) {
 	}
 	
 	
-	part1 = vdist.triangulate(ci, 400*a + 3, a, 1, false)
-
-	// ax = Math.random() > 0.5 ? true : false
-	// vdist.shift(part1, R(50) + 10, R(40) + 5, ax)
+	
+	ax = Math.random() > 0.5 ? true : false
+	// dist1 = vdist.shift(ci, R(100) + 40, R(40) + 5, ax, false)
+	vdist.triangulate(ci, 20*a + 3, a, 1, false, true)
 
 	// dist1 = vdist.shift(ci, 50*a+5, 20*a, false)
 	
@@ -81,6 +113,8 @@ function distortCircle(cnt, n, size, a) {
 
 	//vdist.shift(dist2, 90*a, 30*a, false)
 }	
+
+
 
 
 
